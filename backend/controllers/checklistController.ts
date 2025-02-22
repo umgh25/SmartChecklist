@@ -1,37 +1,45 @@
-import { Request, Response } from 'express';
-import fetch from 'node-fetch';
+import { Request, Response, RequestHandler } from 'express';
+import axios from 'axios';
+import dotenv from 'dotenv';
 
+dotenv.config();
 if (!process.env.HF_API_KEY) {
   throw new Error('La clé API Hugging Face est manquante');
 }
 
 const HF_API_URL = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct';
 
-export const generateChecklist = async (req: Request, res: Response) => {
+interface HFResponse {
+  generated_text: string;
+}
+
+export const generateChecklist: RequestHandler = async (req, res) => {
   try {
     const { description } = req.body;
 
     if (!description) {
-      return res.status(400).json({ error: 'Description requise' });
+      res.status(400).json({ error: 'Description requise' });
+      return;
     }
 
     console.log('Génération de checklist pour:', description);
 
-    const response = await fetch(HF_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.HF_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+    const response = await axios.post(HF_API_URL, 
+      {
         inputs: `Crée une checklist détaillée pour: ${description}`,
         parameters: { temperature: 0.7, max_new_tokens: 200 }
-      })
-    });
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.HF_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-    const data = await response.json();
+    const data = response.data as HFResponse[];
 
-    if (!response.ok || !data || !data[0]?.generated_text) {
+    if (!data || !data[0]?.generated_text) {
       throw new Error('Réponse invalide de l\'API Hugging Face');
     }
 

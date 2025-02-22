@@ -1,7 +1,7 @@
-import express from 'express';
+import { Router } from 'express';
 import { generateChecklist } from '../controllers/checklistController';
 
-const router = express.Router();
+const router = Router();
 
 router.post('/generate', generateChecklist);
 
