@@ -13,23 +13,24 @@ class AIService {
   async generateChecklist(description: string): Promise<string[]> {
     try {
       const response = await this.hf.textGeneration({
-        model: 'gpt2',  // Vous pouvez choisir un modèle plus approprié
+        model: 'mistral-7b-instinct', // modèle plus adapté
         inputs: `Générer une checklist pour: ${description}\n`,
         parameters: {
-          max_length: 500,
+          max_new_tokens: 200,
           temperature: 0.7,
         }
       });
 
-      // Traitement de la réponse pour extraire les étapes
+      //Diviser la checklist en éléments distincts
       const steps = response.generated_text
         .split('\n')
-        .filter((step: string) => step.trim().length > 0);
+        .map(step => step.trim())
+        .filter(step => step.length > 0);
 
       return steps;
     } catch (error) {
-      console.error('Erreur lors de la génération de la checklist:', error);
-      throw error;
+      console.error('❌ Erreur lors de la génération de la checklist:', error);
+      return [];
     }
   }
 }
