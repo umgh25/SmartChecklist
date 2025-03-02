@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
+import { generateChecklist, ChecklistItem } from '@/services/api';
 import { useRouter } from 'next/router';
 
 export default function Home() {
